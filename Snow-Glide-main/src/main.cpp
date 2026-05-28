@@ -673,7 +673,7 @@ int main() {
             if (!exitDialogOpen && !gameIntroActive && CheckCollisionPointRec(mouse, pauseRect) && !CheckCollisionPointRec(mouse, soundRect) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
                 isPaused = !isPaused;
             }
-            if (!isPaused && !exitDialogOpen) {
+            if (gameplayActive) {
                 if (gameIntroActive) {
                     gameIntroTimer += dt;
                     if (gameIntroTimer >= GAME_INTRO_DURATION) {
@@ -715,7 +715,7 @@ int main() {
                     else if (verticalSpeed < 2.0f) currentFrame = 2;
                     else currentFrame = 3;
                 }
-                if (!exitDialogOpen) dayNightTimer += dt;
+                dayNightTimer += dt;
                 // ----- SPAWN-BLOCK: 5 seconds delay -----
                 spawnBlockTimer += dt;
                 bool canSpawn = (spawnBlockTimer > 5.0f);
