@@ -389,6 +389,7 @@ void InitGameLogic(
     icSlowing = false;
     health = maxHealth;
     mana = maxMana;
+    manaRegenAccumulator = 0.0f;
 
     birds.clear(); birdSpawnTimer = 0.0f;
     birdSpawnInterval = 3.0f + (float)GetRandomValue(0, 200)/50.0f;
@@ -499,14 +500,16 @@ int main() {
             isSoundOn = !isSoundOn;
             SaveSoundState();
         }
-        if (currentState == GAME && !isPaused)
+        bool gameplayActive = currentState == GAME && !isPaused && !exitDialogOpen;
+
+        if (gameplayActive)
             timeSinceGameStarted += dt;
 
         if (bankaiCooldown > 0.0f) bankaiCooldown -= dt;
         if (bankaiCooldown < 0.0f) bankaiCooldown = 0.0f;
 
         // --------- RAIN LOGIC ---------
-        if (currentState == GAME && !isPaused && rainPeriodCount < 4) {
+        if (gameplayActive && rainPeriodCount < 4) {
             rainTimer += dt;
             if (rainState == 0 && rainTimer >= rainNextEventTime) {
                 raining = true;
@@ -556,9 +559,9 @@ int main() {
                     }
                 }
             }
-        } else if ((isPaused || currentState != GAME) && rainSoundPlaying) {
+        } else if (!gameplayActive && rainSoundPlaying) {
             PauseSound(rainSnd);
-        } else if (!isPaused && currentState == GAME && raining && !IsSoundPlaying(rainSnd)) {
+        } else if (gameplayActive && raining && !IsSoundPlaying(rainSnd)) {
             ResumeSound(rainSnd);
         }
 
@@ -584,7 +587,7 @@ int main() {
             }
         }
 
-        if (currentState == GAME && !isPaused) {
+        if (gameplayActive) {
             bg1Offset += bgScrollSpeed * dt;
             if (bg1Offset >= bg1.width) bg1Offset -= bg1.width;
             bg2Offset += bgScrollSpeed * dt;
@@ -667,10 +670,10 @@ int main() {
         float effectiveSpeed = currentSpeed;
         if (raining) effectiveSpeed *= 0.95f;
         if (currentState == GAME) {
-            if (!gameIntroActive && CheckCollisionPointRec(mouse, pauseRect) && !CheckCollisionPointRec(mouse, soundRect) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+            if (!exitDialogOpen && !gameIntroActive && CheckCollisionPointRec(mouse, pauseRect) && !CheckCollisionPointRec(mouse, soundRect) && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
                 isPaused = !isPaused;
             }
-            if (!isPaused) {
+            if (gameplayActive) {
                 if (gameIntroActive) {
                     gameIntroTimer += dt;
                     if (gameIntroTimer >= GAME_INTRO_DURATION) {
@@ -712,7 +715,7 @@ int main() {
                     else if (verticalSpeed < 2.0f) currentFrame = 2;
                     else currentFrame = 3;
                 }
-                if (!isPaused) dayNightTimer += dt;
+                dayNightTimer += dt;
                 // ----- SPAWN-BLOCK: 5 seconds delay -----
                 spawnBlockTimer += dt;
                 bool canSpawn = (spawnBlockTimer > 5.0f);

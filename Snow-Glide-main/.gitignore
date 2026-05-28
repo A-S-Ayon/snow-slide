@@ -1,0 +1,9 @@
+/main.exe
+/lib/*.dll
+/coin.txt
+/highscore.txt
+/highscores.txt
+/soundstate.txt
+/upgrades.txt
+/src/coin.txt
+/src/highscore.txt
